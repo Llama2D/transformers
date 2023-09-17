@@ -33,6 +33,8 @@ from ...modeling_utils import PreTrainedModel
 from ...utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
 from .configuration_llama import LlamaConfig
 
+from .stolen_code import PositionEmbeddingRandom
+
 
 logger = logging.get_logger(__name__)
 
@@ -754,8 +756,11 @@ class LlamaModel(LlamaPreTrainedModel):
 class LlamaForCausalLM(LlamaPreTrainedModel):
     _tied_weights_keys = ["lm_head.weight"]
 
-    def __init__(self, config,embedder:nn.Module):
+    def __init__(self, config,embedder:nn.Module=None):
         super().__init__(config)
+
+        embedder = embedder if embedder is not None else PositionEmbeddingRandom(num_pos_feats=64,scale=None,pin_lbd=False)
+
         self.model = LlamaModel(config,embedder)
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)

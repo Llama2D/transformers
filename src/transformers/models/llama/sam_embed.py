@@ -4,6 +4,12 @@ from typing import Any, Optional, Tuple
 import numpy as np
 import torch.nn as nn
 
+import torch
+from typing import Any, Optional, Tuple
+
+import numpy as np
+import torch.nn as nn
+
 # from ..constants import SCREEN_RESOLUTION
 
 class PositionEmbeddingRandom(nn.Module):
@@ -28,7 +34,7 @@ class PositionEmbeddingRandom(nn.Module):
         # TODO: for a sanity check, freeze this param to zero.
         # this will test if a normal Llama can learn to beat WebArena.
         # a gate for the positional encoding
-        self.lbd = nn.Parameter(torch.tensor(0.0))
+        self.lbd = nn.Parameter(torch.tensor([0.1]),requires_grad=True).cuda()
 
         if pin_lbd:
             self.lbd.requires_grad = False
@@ -95,7 +101,7 @@ class PositionEmbeddingRandom(nn.Module):
         delta = pos_embeds.unsqueeze(1) + is_a_point_embeds.unsqueeze(1)
 
         # add the positional embedding to the query and key
-        q = q + delta * self.lbd
-        k = k + delta * self.lbd
+        q = q + delta * self.lbd[0]
+        k = k + delta * self.lbd[0]
 
         return q,k,is_a_point_embeds

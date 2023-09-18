@@ -69,8 +69,8 @@ class PositionEmbeddingRandom(nn.Module):
         # shape of coords: [bs, seq_len, 2]
 
         # maybe ??? is 1:
-        assert q.shape[1] == 1,f"The ??? dimension of q is {q.shape[1]}, not 1"
-        assert k.shape[1] == 1,f"The ??? dimension of k is {k.shape[1]}, not 1"
+        # assert q.shape[1] == 1,f"The ??? dimension of q is {q.shape[1]}, not 1"
+        # assert k.shape[1] == 1,f"The ??? dimension of k is {k.shape[1]}, not 1"
         assert len(coords.shape) == 3,f"The shape of coords should have dims (batch_size,seq_len,2)"
 
         bs,num_heads,seq_len,dim = q.shape

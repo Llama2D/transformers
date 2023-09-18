@@ -759,6 +759,8 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
     def __init__(self, config,embedder:nn.Module=None):
         super().__init__(config)
 
+        print(config)
+
         embedder = embedder if embedder is not None else PositionEmbeddingRandom(num_pos_feats=64,scale=None,pin_lbd=False)
 
         self.model = LlamaModel(config,embedder)

@@ -764,6 +764,7 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
         num_pos_feats = config.hidden_size // config.num_key_value_heads
 
         embedder = embedder if embedder is not None else PositionEmbeddingRandom(num_pos_feats=num_pos_feats,scale=None,pin_lbd=False)
+        self.embedder= embedder
 
         self.model = LlamaModel(config,embedder)
         self.vocab_size = config.vocab_size

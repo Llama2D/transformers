@@ -79,7 +79,7 @@ class PositionEmbeddingRandom(nn.Module):
 
         bs,num_heads,seq_len,dim = q.shape
 
-        assert dim == self.num_pos_feats,f"Dim of q is {dim}, not {self.num_pos_feats}"
+        assert dim == self.num_pos_feats//2,f"Dim of q is {dim}, not {self.num_pos_feats}"
 
         # some coords will be [-1,-1] because they have no known position
         # we should not add these coords to the positional embedding

@@ -81,7 +81,7 @@ class PositionEmbeddingRandom(nn.Module):
         # we should not add these coords to the positional embedding
         is_a_point = coords[:,:,0] != -1
 
-        pos_embeds = self.forward_with_coords(coords)
+        pos_embeds = self.forward_with_coords(coords,(1,1))
         assert pos_embeds.shape == (bs,seq_len,dim)
 
         is_a_point_embeds = self.is_a_point_embed(is_a_point.long())

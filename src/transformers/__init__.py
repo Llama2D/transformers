@@ -2085,6 +2085,9 @@ else:
     _import_structure["models.llama"].extend(
         ["LlamaForCausalLM", "LlamaForSequenceClassification", "LlamaModel", "LlamaPreTrainedModel"]
     )
+    _import_structure["models.llama2d"].extend(
+        ["Llama2DForCausalLM", "Llama2DForSequenceClassification", "Llama2DModel", "Llama2DPreTrainedModel"]
+    )
     _import_structure["models.longformer"].extend(
         [
             "LONGFORMER_PRETRAINED_MODEL_ARCHIVE_LIST",

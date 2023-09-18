@@ -4,12 +4,6 @@ from typing import Any, Optional, Tuple
 import numpy as np
 import torch.nn as nn
 
-import torch
-from typing import Any, Optional, Tuple
-
-import numpy as np
-import torch.nn as nn
-
 # from ..constants import SCREEN_RESOLUTION
 
 class PositionEmbeddingRandom(nn.Module):
@@ -31,7 +25,7 @@ class PositionEmbeddingRandom(nn.Module):
         # TODO: for a sanity check, freeze this param to zero.
         # this will test if a normal Llama can learn to beat WebArena.
         # a gate for the positional encoding
-        self.lbd = nn.Parameter(torch.tensor([0.1]),requires_grad=True)
+        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True))
 
         if pin_lbd:
             self.lbd.requires_grad = False
@@ -80,8 +74,6 @@ class PositionEmbeddingRandom(nn.Module):
         assert len(coords.shape) == 3,f"The shape of coords should have dims (batch_size,seq_len,2)"
 
         bs,num_heads,seq_len,dim = q.shape
-
-        print("Dim:",dim)
 
         assert dim == self.num_pos_feats,f"Dim of q is {dim}, not {self.num_pos_feats}"
 

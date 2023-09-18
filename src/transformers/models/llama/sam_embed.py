@@ -89,7 +89,7 @@ class PositionEmbeddingRandom(nn.Module):
         assert pos_embeds.shape == (bs,seq_len,dim)
 
         is_a_point_embeds = self.is_a_point_embed(is_a_point.long())
-        assert is_a_point_embeds.shape == (bs,seq_len,dim)
+        assert is_a_point_embeds.shape == (bs,seq_len,dim),f"Shape of is_a_point_embeds is {is_a_point_embeds.shape} - shape of coords is {coords.shape}"
 
         delta = pos_embeds.unsqueeze(1) + is_a_point_embeds.unsqueeze(1)
 

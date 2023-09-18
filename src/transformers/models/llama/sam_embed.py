@@ -16,6 +16,7 @@ class PositionEmbeddingRandom(nn.Module):
         if scale is None or scale <= 0.0:
             scale = 1.0
         self.positional_encoding_gaussian_matrix= scale * torch.randn((2, num_pos_feats))
+        self.positional_encoding_gaussian_matrix.cuda()
 
         # 0 is for not a point, 1 is for a point
         self.is_a_point_embed = nn.Embedding(2, num_pos_feats)

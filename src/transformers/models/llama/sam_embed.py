@@ -35,8 +35,8 @@ class PositionEmbeddingRandom(nn.Module):
     def _pe_encoding(self, coords: torch.Tensor) -> torch.Tensor:
         """Positionally encode points that are normalized to [0,1]."""
         if self.positional_encoding_gaussian_matrix.device != coords.device:
-            print("converting pos encodings to device")
-            self.positional_encoding_gaussian_matrix = self.positional_encoding_gaussian_matrix.to(coords.device)
+            print("converting pos encodings to device",coords.device,coords.dtype,self.positional_encoding_gaussian_matrix.dtype)
+            self.positional_encoding_gaussian_matrix = self.positional_encoding_gaussian_matrix.to(coords.device).to(coords.dtype)
         # assuming coords are in [0, 1]^2 square and have d_1 x ... x d_n x 2 shape
         coords = 2 * coords - 1
         coords = coords @ self.positional_encoding_gaussian_matrix

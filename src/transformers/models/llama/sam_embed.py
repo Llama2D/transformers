@@ -15,11 +15,11 @@ class PositionEmbeddingRandom(nn.Module):
         super().__init__()
         if scale is None or scale <= 0.0:
             scale = 1.0
-        self.positional_encoding_gaussian_matrix= scale * torch.randn((2, num_pos_feats))
+        self.positional_encoding_gaussian_matrix= scale * torch.randn((2, num_pos_feats*2))
         self.positional_encoding_gaussian_matrix.cuda()
 
         # 0 is for not a point, 1 is for a point
-        self.is_a_point_embed = nn.Embedding(2, num_pos_feats)
+        self.is_a_point_embed = nn.Embedding(2, num_pos_feats*2)
 
         self.num_pos_feats = num_pos_feats
 
@@ -79,7 +79,7 @@ class PositionEmbeddingRandom(nn.Module):
 
         bs,num_heads,seq_len,dim = q.shape
 
-        assert dim == self.num_pos_feats//2,f"Dim of q is {dim}, not {self.num_pos_feats}"
+        assert dim//2 == self.num_pos_feats,f"Dim of q is {dim}, not {self.num_pos_feats}"
 
         # some coords will be [-1,-1] because they have no known position
         # we should not add these coords to the positional embedding

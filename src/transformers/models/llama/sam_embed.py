@@ -15,18 +15,18 @@ class PositionEmbeddingRandom(nn.Module):
         super().__init__()
         if scale is None or scale <= 0.0:
             scale = 1.0
-        self.positional_encoding_gaussian_matrix= scale * torch.randn((2, num_pos_feats))
+        self.positional_encoding_gaussian_matrix= scale * torch.randn((2, num_pos_feats)).to(torch.float16)
         self.positional_encoding_gaussian_matrix.cuda()
 
         # 0 is for not a point, 1 is for a point
-        self.is_a_point_embed = nn.Embedding(2, num_pos_feats*2)
+        self.is_a_point_embed = nn.Embedding(2, num_pos_feats*2).to(torch.float16)
 
         self.num_pos_feats = num_pos_feats
 
         # TODO: for a sanity check, freeze this param to zero.
         # this will test if a normal Llama can learn to beat WebArena.
         # a gate for the positional encoding
-        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True))
+        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True).to(torch.float16))
 
         if pin_lbd:
             self.lbd.requires_grad = False

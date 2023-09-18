@@ -23,7 +23,7 @@ from ...utils import (
 
 
 _import_structure = {
-    "configuration_llama": ["LLAMA_PRETRAINED_CONFIG_ARCHIVE_MAP", "LlamaConfig"],
+    "configuration_llama": ["LLAMA_PRETRAINED_CONFIG_ARCHIVE_MAP", "Llama2DConfig"],
 }
 
 try:
@@ -49,10 +49,10 @@ except OptionalDependencyNotAvailable:
     pass
 else:
     _import_structure["modeling_llama"] = [
-        "LlamaForCausalLM",
-        "LlamaModel",
-        "LlamaPreTrainedModel",
-        "LlamaForSequenceClassification",
+        "Llama2DForCausalLM",
+        "Llama2DModel",
+        "Llama2DPreTrainedModel",
+        "Llama2DForSequenceClassification",
     ]
 
 

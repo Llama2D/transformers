@@ -80,7 +80,7 @@ class PositionEmbeddingRandom(nn.Module):
         # aka: B x num_heads x N x C
         # shape of coords: [bs, seq_len, 2]
         bs,num_heads,seq_len,dim = q.shape
-        pos_embeds = pos_embeds.unsqueeze(1)
+        # pos_embeds = pos_embeds.unsqueeze(1)
         # assert dim//2 == self.num_pos_feats,f"Dim of q is {dim}, not {self.num_pos_feats}"
 
         # add the positional embedding to the query and key

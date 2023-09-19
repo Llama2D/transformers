@@ -754,7 +754,7 @@ class Llama2DModel(Llama2DPreTrainedModel):
 
 
 class Llama2DForCausalLM(Llama2DPreTrainedModel):
-    _tied_weights_keys = ["lm_head.weight"]
+    _tied_weights_keys = ["lm_head.weight","embedder.positional_encoding_gaussian_matrix"]
 
     def __init__(self, config):
         super().__init__(config)

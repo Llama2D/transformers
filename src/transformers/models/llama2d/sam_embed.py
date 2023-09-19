@@ -57,7 +57,7 @@ class PositionEmbeddingRandom(nn.Module):
         coords[:, :, 1] = coords[:, :, 1] / image_size[0]
         return self._pe_encoding(coords)  # B x N x C
 
-    def get_rotary_2d_pos_emb(self,coords):
+    def get_rotary_2d_pos_embeds(self,coords):
         assert len(coords.shape) == 3,f"The shape of coords should have dims (batch_size,seq_len,2)"
 
         # some coords will be [-1,-1] because they have no known position

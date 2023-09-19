@@ -779,10 +779,12 @@ class Llama2DForCausalLM(Llama2DPreTrainedModel):
         # Initialize weights and apply final processing
         self.post_init()
 
-        for k,v in self.model.named_parameters():
+        for k,v in self.model.state_dict():
             if k.endswith('.lbd'):
-                print("Setting lbd to 0.0",v.data.nelement())
-                v.data.fill_(0.0)
+                data = v.data if isinstance(v,torch.nn.Parameter) else v
+                # check if is parameter or tensor
+                print("Setting lbd to 0.0",data.nelement())
+                data.fill_(0.0)
     
     def _get_arguments_from_pretrained(
             model_or_path,

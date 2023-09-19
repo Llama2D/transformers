@@ -19,6 +19,7 @@
 # limitations under the License.
 """ PyTorch LLaMA model."""
 import math
+import os
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -26,6 +27,8 @@ import torch.nn.functional as F
 import torch.utils.checkpoint
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
+
+from transformers.src.transformers.configuration_utils import PretrainedConfig
 
 from ...activations import ACT2FN
 from ...modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast, SequenceClassifierOutputWithPast
@@ -779,12 +782,20 @@ class Llama2DForCausalLM(Llama2DPreTrainedModel):
         # Initialize weights and apply final processing
         self.post_init()
 
-        for k,v in self.model.state_dict():
+    
+    @classmethod
+    def from_pretrained(cls,*args,**kwargs):
+        ret = super().from_pretrained(*args,**kwargs)
+
+        for k,v in ret.model.state_dict().items():
             if k.endswith('.lbd'):
                 data = v.data if isinstance(v,torch.nn.Parameter) else v
                 # check if is parameter or tensor
-                print("Setting lbd to 0.0",data.nelement())
+                print("Setting lbd to 0.0",data)
                 data.fill_(0.0)
+        
+        return ret
+
     
     def _get_arguments_from_pretrained(
             model_or_path,

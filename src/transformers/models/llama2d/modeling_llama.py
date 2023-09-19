@@ -941,6 +941,15 @@ class Llama2DForCausalLM(Llama2DPreTrainedModel):
             if past_key_values:
                 position_ids = position_ids[:, -1].unsqueeze(-1)
 
+        # pad the coords with (-1, -1) 
+        # coords should come in shape (batch_size, num_seq_pad, 2)
+        # input_ids should have shape (batch_size, num_seq_pad)
+        coord_padding = input_ids.shape[1] - coords.shape[1]
+
+        if coord_padding > 0:
+            padding_value = torch.tensor([-1, -1]).repeat(coord_padding, 1).to(coords.device)
+            coords = torch.cat([coords, padding_value], dim=1)
+
         # if `inputs_embeds` are passed, we only want to use them in the 1st generation step
         if inputs_embeds is not None and past_key_values is None:
             model_inputs = {"inputs_embeds": inputs_embeds}

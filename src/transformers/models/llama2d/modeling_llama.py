@@ -722,7 +722,7 @@ class Llama2DModel(Llama2DPreTrainedModel):
                     hidden_states,
                     attention_mask,
                     position_ids,
-                    coords,
+                    pos_embeds,
                 )
             else:
                 layer_outputs = decoder_layer(

@@ -22,7 +22,7 @@ class PositionEmbeddingRandom(nn.Module):
         
         matrix = scale * torch.randn((2, num_pos_feats)).to(torch_dtype)
         matrix.requires_grad = False
-        self.positional_encoding_gaussian_matrix= nn.Parameter(matrix)
+        self.positional_encoding_gaussian_matrix= matrix
 
         # 0 is for not a point, 1 is for a point
         self.is_a_point_embed = nn.Embedding(2, num_pos_feats*2).to(torch_dtype)
@@ -30,11 +30,11 @@ class PositionEmbeddingRandom(nn.Module):
         self.num_pos_feats = num_pos_feats
 
         # I use a 1d lambda because otherwise torch.empty(*param.size()) fails
-        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True).to(torch_dtype))
+        # self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True).to(torch_dtype))
 
         if pin_lbd:
-            self.lbd.requires_grad = False
-            print("Pinned lambda!")
+            # self.lbd.requires_grad = False
+            print("Pinned lambda! (this code does nothing right now)")
 
     def _pe_encoding(self, coords: torch.Tensor) -> torch.Tensor:
         """Positionally encode points that are normalized to [0,1]."""
@@ -57,32 +57,33 @@ class PositionEmbeddingRandom(nn.Module):
         coords[:, :, 1] = coords[:, :, 1] / image_size[0]
         return self._pe_encoding(coords)  # B x N x C
 
-
-    def apply_rotary_2d_pos_emb(self,q,k,coords):
-        # shape of q and k: [bs, num_heads, seq_len, dim]
-        # aka: B x num_heads x N x C
-        # shape of coords: [bs, seq_len, 2]
-
+    def get_rotary_2d_pos_emb(self,coords):
         assert len(coords.shape) == 3,f"The shape of coords should have dims (batch_size,seq_len,2)"
-
-        bs,num_heads,seq_len,dim = q.shape
-
-        assert dim//2 == self.num_pos_feats,f"Dim of q is {dim}, not {self.num_pos_feats}"
 
         # some coords will be [-1,-1] because they have no known position
         # we should not add these coords to the positional embedding
         is_a_point = coords[:,:,0] != -1
 
         pos_embeds = self.forward_with_coords(coords,(1,1))
-        assert pos_embeds.shape == (bs,seq_len,dim),f"Shape of pos_embeds is {pos_embeds.shape} - shape of coords is {coords.shape} - intended shape is {(bs,seq_len,dim)}"
+        # assert pos_embeds.shape == (bs,seq_len,dim),f"Shape of pos_embeds is {pos_embeds.shape} - shape of coords is {coords.shape} - intended shape is {(bs,seq_len,dim)}"
 
         is_a_point_embeds = self.is_a_point_embed(is_a_point.long())
-        assert is_a_point_embeds.shape == (bs,seq_len,dim),f"Shape of is_a_point_embeds is {is_a_point_embeds.shape} - shape of coords is {coords.shape}"
+        # assert is_a_point_embeds.shape == (bs,seq_len,dim),f"Shape of is_a_point_embeds is {is_a_point_embeds.shape} - shape of coords is {coords.shape}"
 
         delta = pos_embeds.unsqueeze(1) + is_a_point_embeds.unsqueeze(1)
 
+        return delta
+
+    @staticmethod
+    def apply_rotary_2d_pos_emb(q,k,pos_embeds,lbd):
+        # shape of q and k: [bs, num_heads, seq_len, dim]
+        # aka: B x num_heads x N x C
+        # shape of coords: [bs, seq_len, 2]
+        bs,num_heads,seq_len,dim = q.shape
+        # assert dim//2 == self.num_pos_feats,f"Dim of q is {dim}, not {self.num_pos_feats}"
+
         # add the positional embedding to the query and key
-        q = q + delta * self.lbd[0]
-        k = k + delta * self.lbd[0]
+        q = q + pos_embeds * lbd
+        k = k + pos_embeds * lbd
 
         return q,k

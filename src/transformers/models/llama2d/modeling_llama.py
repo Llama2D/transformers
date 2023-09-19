@@ -263,7 +263,7 @@ class LlamaAttention(nn.Module):
 
         if config.pin_lbd:
             self.lbd.requires_grad = False
-            print("Pinned lambda! (this code works)")
+            print("Pinned lambda! (this code works) - value:",self.lbd.item())
 
         self._init_rope()
 
@@ -778,6 +778,11 @@ class Llama2DForCausalLM(Llama2DPreTrainedModel):
 
         # Initialize weights and apply final processing
         self.post_init()
+
+        for k,v in self.model.named_parameters():
+            if k.endswith('.lbd'):
+                print("Setting lbd to 0.0",v.data.nelement())
+                v.data.fill_(0.0)
     
     def _get_arguments_from_pretrained(
             model_or_path,

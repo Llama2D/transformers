@@ -22,7 +22,8 @@ class PositionEmbeddingRandom(nn.Module):
         
         matrix = scale * torch.randn((2, num_pos_feats)).to(torch_dtype)
         matrix.requires_grad = False
-        self.positional_encoding_gaussian_matrix= matrix
+        # register buffer
+        self.register_buffer("positional_encoding_gaussian_matrix", matrix)
 
         # 0 is for not a point, 1 is for a point
         self.is_a_point_embed = nn.Embedding(2, num_pos_feats*2).to(torch_dtype)
@@ -32,6 +33,7 @@ class PositionEmbeddingRandom(nn.Module):
         # I use a 1d lambda because otherwise torch.empty(*param.size()) fails
         # self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True).to(torch_dtype))
 
+        self.pin_lbd = pin_lbd
         if pin_lbd:
             # self.lbd.requires_grad = False
             print("Pinned lambda! (this code does nothing right now)")
@@ -76,6 +78,7 @@ class PositionEmbeddingRandom(nn.Module):
 
     @staticmethod
     def apply_rotary_2d_pos_emb(q,k,pos_embeds,lbd):
+
         # shape of q and k: [bs, num_heads, seq_len, dim]
         # aka: B x num_heads x N x C
         # shape of coords: [bs, seq_len, 2]

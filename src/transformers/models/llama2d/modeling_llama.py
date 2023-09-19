@@ -260,7 +260,7 @@ class LlamaAttention(nn.Module):
         self.k_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
-        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True,dtype=config.torch_dtype))
+        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True,dtype=config.torch_dtype),requires_grad=True)
 
         if config.pin_lbd:
             self.lbd.requires_grad = False

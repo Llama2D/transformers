@@ -264,7 +264,7 @@ class LlamaAttention(nn.Module):
 
         if config.pin_lbd:
             self.lbd.requires_grad = False
-            print("Pinned lambda! (this code works) - value:",self.lbd.item())
+            # print("Pinned lambda! (this code works) - value:",self.lbd.item())
 
         self._init_rope()
 

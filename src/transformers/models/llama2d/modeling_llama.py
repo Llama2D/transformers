@@ -680,9 +680,6 @@ class Llama2DModel(Llama2DPreTrainedModel):
         else:
             position_ids = position_ids.view(-1, seq_length).long()
         
-        assert coords is not None,'Coords passed to LlamaModel.forward were none!'
-        pos_embeds = self.pos_embedder.get_rotary_2d_pos_embeds(coords)
-
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids)
         # embed positions
@@ -695,6 +692,11 @@ class Llama2DModel(Llama2DPreTrainedModel):
         )
 
         hidden_states = inputs_embeds
+
+        print("hidden_states",hidden_states.dtype,"")
+
+        assert coords is not None,'Coords passed to LlamaModel.forward were none!'
+        pos_embeds = self.pos_embedder.get_rotary_2d_pos_embeds(coords)
 
         if self.gradient_checkpointing and self.training:
             if use_cache:

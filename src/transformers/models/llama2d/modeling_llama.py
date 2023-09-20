@@ -261,10 +261,7 @@ class LlamaAttention(nn.Module):
         self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
         self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True,dtype=config.torch_dtype),requires_grad=True)
-
-        if config.pin_lbd:
-            self.lbd.requires_grad = False
-            # print("Pinned lambda! (this code works) - value:",self.lbd.item())
+        self.pin_lbd = config.pin_lbd
 
         self._init_rope()
 
@@ -343,7 +340,8 @@ class LlamaAttention(nn.Module):
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
 
-        query_states, key_states = PositionEmbeddingRandom.apply_rotary_2d_pos_emb(query_states,key_states,pos_embeds,self.lbd[0])
+        if not self.pin_lbd:
+            query_states, key_states = PositionEmbeddingRandom.apply_rotary_2d_pos_emb(query_states,key_states,pos_embeds,self.lbd[0])
 
         if past_key_value is not None:
             # reuse k, v, self_attention

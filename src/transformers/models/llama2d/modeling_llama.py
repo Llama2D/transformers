@@ -343,11 +343,6 @@ class LlamaAttention(nn.Module):
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
 
-        print("pos_embeds",pos_embeds.dtype)
-        print("o_proj",self.o_proj.weight.dtype)
-        print("lbd",self.lbd.dtype)
-        print("query_states",query_states.dtype)
-
         query_states, key_states = PositionEmbeddingRandom.apply_rotary_2d_pos_emb(query_states,key_states,pos_embeds,self.lbd[0])
 
         if past_key_value is not None:
@@ -692,8 +687,6 @@ class Llama2DModel(Llama2DPreTrainedModel):
         )
 
         hidden_states = inputs_embeds
-
-        print("hidden_states",hidden_states.dtype,"")
 
         assert coords is not None,'Coords passed to LlamaModel.forward were none!'
         pos_embeds = self.pos_embedder.get_rotary_2d_pos_embeds(coords)

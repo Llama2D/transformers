@@ -34,9 +34,6 @@ class PositionEmbeddingRandom(nn.Module):
         # self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True).to(torch_dtype))
 
         self.pin_lbd = pin_lbd
-        if pin_lbd:
-            # self.lbd.requires_grad = False
-            print("Pinned lambda! (this code does nothing right now)")
 
     def _pe_encoding(self, coords: torch.Tensor) -> torch.Tensor:
         """Positionally encode points that are normalized to [0,1]."""

@@ -46,7 +46,6 @@ class PositionEmbeddingRandom(nn.Module):
 
         if self.positional_encoding_gaussian_matrix.dtype != coords.dtype:
             print("Dtype mismatch",coords.dtype,self.positional_encoding_gaussian_matrix.dtype)
-            raise NotImplementedError("Dtype mismatch")
         # assuming coords are in [0, 1]^2 square and have d_1 x ... x d_n x 2 shape
         coords = 2 * coords - 1
         coords = coords @ self.positional_encoding_gaussian_matrix

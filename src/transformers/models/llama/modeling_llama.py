@@ -259,6 +259,9 @@ class LlamaAttention(nn.Module):
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
         self._init_rope()
 
+        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True,dtype=config.torch_dtype),requires_grad=True)
+        self.pin_lbd = config.pin_lbd
+
     def _init_rope(self):
         if self.config.rope_scaling is None:
             self.rotary_emb = LlamaRotaryEmbedding(

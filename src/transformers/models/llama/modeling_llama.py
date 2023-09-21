@@ -555,6 +555,7 @@ LLAMA_INPUTS_DOCSTRING = r"""
             Whether or not to return a [`~utils.ModelOutput`] instead of a plain tuple.
 """
 
+from ..llama2d.sam_embed import PositionEmbeddingRandom
 
 @add_start_docstrings(
     "The bare LLaMA Model outputting raw hidden-states without any specific head on top.",
@@ -574,6 +575,11 @@ class LlamaModel(LlamaPreTrainedModel):
         self.vocab_size = config.vocab_size
 
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
+
+        num_pos_feats = config.hidden_size // config.num_key_value_heads
+        torch_dtype = torch.float16
+        self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,pin_lbd=config.pin_lbd,torch_dtype=torch_dtype)
+
         self.layers = nn.ModuleList([LlamaDecoderLayer(config) for _ in range(config.num_hidden_layers)])
         self.norm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 

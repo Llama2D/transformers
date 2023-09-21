@@ -152,6 +152,9 @@ class LlamaConfig(PretrainedConfig):
         self.rope_scaling = rope_scaling
         self._rope_scaling_validation()
 
+        self.use_2d = use_2d
+        self.pin_lbd = pin_lbd
+
         super().__init__(
             pad_token_id=pad_token_id,
             bos_token_id=bos_token_id,

@@ -342,6 +342,8 @@ class LlamaAttention(nn.Module):
 
         if not self.pin_lbd:
             query_states, key_states = PositionEmbeddingRandom.apply_rotary_2d_pos_emb(query_states,key_states,pos_embeds,self.lbd[0])
+        else:
+            print("Skipping rotary 2d embed")
 
         if past_key_value is not None:
             # reuse k, v, self_attention
@@ -587,7 +589,7 @@ class Llama2DModel(Llama2DPreTrainedModel):
         self.vocab_size = config.vocab_size
 
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
-        self.pos_embedder = embedder
+        # self.pos_embedder = embedder
         self.layers = nn.ModuleList([LlamaDecoderLayer(config) for _ in range(config.num_hidden_layers)])
         self.norm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
@@ -687,7 +689,7 @@ class Llama2DModel(Llama2DPreTrainedModel):
         hidden_states = inputs_embeds
 
         assert coords is not None,'Coords passed to LlamaModel.forward were none!'
-        pos_embeds = self.pos_embedder.get_rotary_2d_pos_embeds(coords)
+        pos_embeds = coords#self.pos_embedder.get_rotary_2d_pos_embeds(coords)
 
         if self.gradient_checkpointing and self.training:
             if use_cache:

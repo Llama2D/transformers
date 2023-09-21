@@ -125,6 +125,7 @@ class LlamaConfig(PretrainedConfig):
         tie_word_embeddings=False,
         rope_theta=10000.0,
         rope_scaling=None,
+        pin_lbd=False,
         **kwargs,
     ):
         self.vocab_size = vocab_size
@@ -147,6 +148,8 @@ class LlamaConfig(PretrainedConfig):
         self.rope_theta = rope_theta
         self.rope_scaling = rope_scaling
         self._rope_scaling_validation()
+
+        self.pin_lbd = pin_lbd
 
         super().__init__(
             pad_token_id=pad_token_id,

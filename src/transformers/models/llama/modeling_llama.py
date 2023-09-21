@@ -33,6 +33,8 @@ from ...modeling_utils import PreTrainedModel
 from ...utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
 from .configuration_llama import LlamaConfig
 
+from .sam_embed import PositionEmbeddingRandom
+
 
 logger = logging.get_logger(__name__)
 
@@ -233,6 +235,29 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads, n_rep, slen, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
+class LambdaGate(nn.Module):
+    def __init__(self,torch_dtype=None):
+        super().__init__()
+        assert torch_dtype is not None,"No torch_dtype passed to Lambda"
+        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True,dtype=torch_dtype),requires_grad=True)
+    def forward(self,a,embeds):
+        return a + embeds * self.lbd
+
+def apply_rotary_2d_pos_emb(q,k,pos_embeds,lbd):
+
+    # shape of q and k: [bs, num_heads, seq_len, dim]
+    # aka: B x num_heads x N x C
+    # shape of coords: [bs, seq_len, 2]
+
+    bs,num_heads,seq_len,dim = q.shape
+
+    # add the positional embedding to the query and key
+    q = lbd(q, pos_embeds)
+    k = lbd(k, pos_embeds)
+
+    return q,k
+
+
 
 class LlamaAttention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
@@ -258,6 +283,12 @@ class LlamaAttention(nn.Module):
         self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
         self._init_rope()
+
+        if config.use_2d:
+                self.use_2d = config.use_2d
+                self.pin_lbd = config.pin_lbd
+
+                self.lbd = LambdaGate(torch_dtype=config.torch_dtype)
 
     def _init_rope(self):
         if self.config.rope_scaling is None:
@@ -297,6 +328,7 @@ class LlamaAttention(nn.Module):
         past_key_value: Optional[Tuple[torch.Tensor]] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
+        pos_embeds: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
         bsz, q_len, _ = hidden_states.size()
 
@@ -331,6 +363,8 @@ class LlamaAttention(nn.Module):
             kv_seq_len += past_key_value[0].shape[-2]
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+
+        query_states, key_states = 
 
         if past_key_value is not None:
             # reuse k, v, self_attention
@@ -401,6 +435,7 @@ class LlamaDecoderLayer(nn.Module):
         past_key_value: Optional[Tuple[torch.Tensor]] = None,
         output_attentions: Optional[bool] = False,
         use_cache: Optional[bool] = False,
+        pos_embeds: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
         """
         Args:
@@ -428,6 +463,7 @@ class LlamaDecoderLayer(nn.Module):
             past_key_value=past_key_value,
             output_attentions=output_attentions,
             use_cache=use_cache,
+            pos_embeds=pos_embeds,
         )
         hidden_states = residual + hidden_states
 
@@ -573,6 +609,11 @@ class LlamaModel(LlamaPreTrainedModel):
         self.padding_idx = config.pad_token_id
         self.vocab_size = config.vocab_size
 
+        if config.use_2d:
+            num_pos_feats = config.hidden_size // config.num_key_value_heads
+
+            self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,pin_lbd=config.pin_lbd,torch_dtype=config.torch_dtype)
+
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
         self.layers = nn.ModuleList([LlamaDecoderLayer(config) for _ in range(config.num_hidden_layers)])
         self.norm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
@@ -623,6 +664,7 @@ class LlamaModel(LlamaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+        coords: Optional[torch.Tensor] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
@@ -657,6 +699,11 @@ class LlamaModel(LlamaPreTrainedModel):
             position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
         else:
             position_ids = position_ids.view(-1, seq_length).long()
+
+        if self.config.use_2d:
+            pos_embeds = self.embedder(coords)
+        else:
+            pos_embeds = None
 
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids)
@@ -703,6 +750,7 @@ class LlamaModel(LlamaPreTrainedModel):
                     hidden_states,
                     attention_mask,
                     position_ids,
+                    pos_embeds=pos_embeds,
                 )
             else:
                 layer_outputs = decoder_layer(
@@ -712,6 +760,7 @@ class LlamaModel(LlamaPreTrainedModel):
                     past_key_value=past_key_value,
                     output_attentions=output_attentions,
                     use_cache=use_cache,
+                    pos_embeds=pos_embeds,
                 )
 
             hidden_states = layer_outputs[0]

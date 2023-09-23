@@ -42,7 +42,8 @@ class PositionEmbeddingRandom(nn.Module):
         if self.positional_encoding_gaussian_matrix.device != coords.device:
             raise ValueError(f"Device mismatch: {self.positional_encoding_gaussian_matrix.device} vs {coords.device}")
         if self.positional_encoding_gaussian_matrix.dtype != coords.dtype:
-            raise ValueError(f"Dtype mismatch: {self.positional_encoding_gaussian_matrix.dtype} vs {coords.dtype}")
+            coords = coords.to(self.positional_encoding_gaussian_matrix.dtype)
+            # raise ValueError(f"Dtype mismatch: {self.positional_encoding_gaussian_matrix.dtype} vs {coords.dtype}")
 
         # assuming coords are in [0, 1]^2 square and have d_1 x ... x d_n x 2 shape
         coords = 2 * coords - 1

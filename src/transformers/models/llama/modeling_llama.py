@@ -365,7 +365,8 @@ class LlamaAttention(nn.Module):
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
 
-        query_states, key_states = apply_rotary_2d_pos_emb(query_states, key_states, pos_embeds, self.lbd)
+        if self.use_2d and not self.pin_lbd:
+            query_states, key_states = apply_rotary_2d_pos_emb(query_states, key_states, pos_embeds, self.lbd)
 
         if past_key_value is not None:
             # reuse k, v, self_attention
@@ -614,6 +615,8 @@ class LlamaModel(LlamaPreTrainedModel):
             num_pos_feats = config.hidden_size // config.num_key_value_heads
 
             self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,pin_lbd=config.pin_lbd,torch_dtype=config.torch_dtype)
+
+            print(list(self.embedder.state_dict().keys()))
 
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
         self.layers = nn.ModuleList([LlamaDecoderLayer(config) for _ in range(config.num_hidden_layers)])

@@ -240,6 +240,7 @@ class LambdaGate(nn.Module):
         super().__init__()
         assert torch_dtype is not None,"No torch_dtype passed to Lambda"
         self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True,dtype=torch_dtype),requires_grad=True)
+        self.lbd_name = "lambda"
     def forward(self,a,embeds):
         return a + embeds * self.lbd
 

@@ -36,6 +36,8 @@ class PositionEmbeddingRandom(nn.Module):
 
         self.pin_lbd = pin_lbd
 
+        self.pos_embed_name = "SAM Position Embedding"
+
     def _pe_encoding(self, coords: torch.Tensor) -> torch.Tensor:
         """Positionally encode points that are normalized to [0,1]."""
 

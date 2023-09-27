@@ -921,6 +921,9 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
     def prepare_inputs_for_generation(
         self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, coords=None, **kwargs
     ):
+        coords = kwargs.get("coords", None)
+        assert coords is not None,'Coords passed to LlamaForSequentialLM were none!'
+
         if past_key_values:
             input_ids = input_ids[:, -1:]
 
@@ -954,6 +957,7 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
                 "past_key_values": past_key_values,
                 "use_cache": kwargs.get("use_cache"),
                 "attention_mask": attention_mask,
+                "coords": coords,
             }
         )
         return model_inputs

@@ -31,7 +31,7 @@ class PositionEmbeddingRandom(nn.Module):
 
         # 0 is for not a point, 1 is for a point
         self.is_a_point_embed = nn.Embedding(2, num_pos_feats*2).to(torch_dtype)
-        self.is_a_point_embed.weight.requires_grad = False
+        self.is_a_point_embed.weight.requires_grad = True
         # make it show up in state_dict
 
         self.num_pos_feats = num_pos_feats

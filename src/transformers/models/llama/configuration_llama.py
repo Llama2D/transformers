@@ -128,6 +128,7 @@ class LlamaConfig(PretrainedConfig):
 
 	use_2d:bool=True,
 	pin_lbd:bool=False,
+    lbd_start_value:float=0.0,
 
         **kwargs,
     ):
@@ -154,6 +155,7 @@ class LlamaConfig(PretrainedConfig):
 
         self.use_2d = use_2d
         self.pin_lbd = pin_lbd
+        self.lbd_start_value = lbd_start_value
 
         super().__init__(
             pad_token_id=pad_token_id,

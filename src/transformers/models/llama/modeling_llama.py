@@ -236,11 +236,16 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 class LambdaGate(nn.Module):
-    def __init__(self,torch_dtype=None):
+    def __init__(self,torch_dtype=None,config: LlamaConfig=None):
         super().__init__()
         assert torch_dtype is not None,"No torch_dtype passed to Lambda"
-        self.lbd = nn.Parameter(torch.tensor([0.0],requires_grad=True,dtype=torch_dtype),requires_grad=True)
+        assert config is not None,"No config passed to Lambda"
+
+        start_value = config.lbd_start_value
+
+        self.lbd = nn.Parameter(torch.tensor([start_value],requires_grad=True,dtype=torch_dtype),requires_grad=True)
         self.lbd_name = "lambda"
+
     def forward(self,a,embeds):
         return a + embeds * self.lbd
 
@@ -289,7 +294,7 @@ class LlamaAttention(nn.Module):
                 self.use_2d = config.use_2d
                 self.pin_lbd = config.pin_lbd
 
-                self.lbd = LambdaGate(torch_dtype=config.torch_dtype)
+                self.lbd = LambdaGate(torch_dtype=config.torch_dtype,config=config)
 
     def _init_rope(self):
         if self.config.rope_scaling is None:

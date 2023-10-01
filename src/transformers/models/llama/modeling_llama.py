@@ -291,11 +291,11 @@ class LlamaAttention(nn.Module):
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
         self._init_rope()
 
-        if config.use_2d:
-                self.use_2d = config.use_2d
-                self.pin_lbd = config.pin_lbd
+        # if config.use_2d:
+        self.use_2d = config.use_2d
+        self.pin_lbd = config.pin_lbd
 
-                self.lbd = LambdaGate(torch_dtype=config.torch_dtype,config=config)
+        self.lbd = LambdaGate(torch_dtype=config.torch_dtype,config=config)
 
     def _init_rope(self):
         if self.config.rope_scaling is None:
@@ -619,12 +619,12 @@ class LlamaModel(LlamaPreTrainedModel):
         self.padding_idx = config.pad_token_id
         self.vocab_size = config.vocab_size
 
-        if config.use_2d:
-            num_pos_feats = config.hidden_size // config.num_key_value_heads
+        # if config.use_2d:
+        num_pos_feats = config.hidden_size // config.num_key_value_heads
 
-            self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,pin_lbd=config.pin_lbd,torch_dtype=config.torch_dtype)
+        self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,pin_lbd=config.pin_lbd,torch_dtype=config.torch_dtype)
 
-            print(list(self.embedder.state_dict().keys()))
+        print(list(self.embedder.state_dict().keys()))
 
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
         self.layers = nn.ModuleList([LlamaDecoderLayer(config) for _ in range(config.num_hidden_layers)])
@@ -730,7 +730,7 @@ class LlamaModel(LlamaPreTrainedModel):
         if self.config.use_2d:
             pos_embeds = self.embedder(coords)
         else:
-            pos_embeds = torch.zeros_like(inputs_embeds)
+            pos_embeds = None
             # raise Exception("Made pos_embeds zeros")
 
         hidden_states = inputs_embeds

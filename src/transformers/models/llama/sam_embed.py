@@ -13,12 +13,10 @@ class PositionEmbeddingRandom(nn.Module):
             self,
             num_pos_feats: int = 64,
             scale: Optional[float] = None,
-            pin_lbd:bool=None,
             torch_dtype=None
         ) -> None:
         super().__init__()
 
-        assert pin_lbd is not None,"No pin_lbd passed to sam_embed"
         assert torch_dtype is not None,"No torch_dtype passed to sam_embed"
 
         if scale is None or scale <= 0.0:
@@ -35,8 +33,6 @@ class PositionEmbeddingRandom(nn.Module):
         # make it show up in state_dict
 
         self.num_pos_feats = num_pos_feats
-
-        self.pin_lbd = pin_lbd
 
         self.pos_embed_name = "SAM Position Embedding"
 

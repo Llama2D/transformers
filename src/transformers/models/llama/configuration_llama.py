@@ -127,7 +127,6 @@ class LlamaConfig(PretrainedConfig):
         rope_scaling=None,
 
 	use_2d:bool=True,
-	pin_lbd:bool=False,
     lbd_start_value:float=0.0,
 
         **kwargs,
@@ -154,7 +153,6 @@ class LlamaConfig(PretrainedConfig):
         self._rope_scaling_validation()
 
         self.use_2d = use_2d
-        self.pin_lbd = pin_lbd
         self.lbd_start_value = lbd_start_value
 
         super().__init__(

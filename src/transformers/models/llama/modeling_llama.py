@@ -291,9 +291,7 @@ class LlamaAttention(nn.Module):
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
         self._init_rope()
 
-        # if config.use_2d:
         self.use_2d = config.use_2d
-        self.pin_lbd = config.pin_lbd
 
         self.lbd = LambdaGate(torch_dtype=config.torch_dtype,config=config)
 
@@ -371,7 +369,7 @@ class LlamaAttention(nn.Module):
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
 
-        if self.use_2d and not self.pin_lbd:
+        if self.use_2d:
             query_states, key_states = apply_rotary_2d_pos_emb(query_states, key_states, pos_embeds, self.lbd)
         else:
             pass
@@ -622,7 +620,7 @@ class LlamaModel(LlamaPreTrainedModel):
         # if config.use_2d:
         num_pos_feats = config.hidden_size // config.num_key_value_heads
 
-        self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,pin_lbd=config.pin_lbd,torch_dtype=config.torch_dtype)
+        self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,torch_dtype=config.torch_dtype)
 
         print(list(self.embedder.state_dict().keys()))
 

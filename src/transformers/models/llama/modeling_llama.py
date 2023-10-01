@@ -242,7 +242,7 @@ class LambdaGate(nn.Module):
         assert config is not None,"No config passed to Lambda"
 
         start_value = config.lbd_start_value
-        print("start_value",config.lbd_start_value)
+        # print("start_value",config.lbd_start_value)
 
         self.lbd = nn.Parameter(torch.tensor([start_value],requires_grad=True,dtype=torch_dtype),requires_grad=True)
         self.lbd_name = "lambda"

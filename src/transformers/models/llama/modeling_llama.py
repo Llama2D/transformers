@@ -373,6 +373,8 @@ class LlamaAttention(nn.Module):
 
         if self.use_2d and not self.pin_lbd:
             query_states, key_states = apply_rotary_2d_pos_emb(query_states, key_states, pos_embeds, self.lbd)
+        else:
+            raise Exception("Didn't apply 2d pos emb")
 
         if past_key_value is not None:
             # reuse k, v, self_attention
@@ -710,11 +712,6 @@ class LlamaModel(LlamaPreTrainedModel):
         else:
             position_ids = position_ids.view(-1, seq_length).long()
 
-        if self.config.use_2d:
-            pos_embeds = self.embedder(coords)
-        else:
-            pos_embeds = None
-
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids)
         # embed positions
@@ -725,6 +722,12 @@ class LlamaModel(LlamaPreTrainedModel):
         attention_mask = self._prepare_decoder_attention_mask(
             attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
         )
+
+        if self.config.use_2d:
+            pos_embeds = self.embedder(coords)
+        else:
+            pos_embeds = torch.zeros_like(inputs_embeds)
+            raise Exception("Made pos_embeds zeros")
 
         hidden_states = inputs_embeds
 

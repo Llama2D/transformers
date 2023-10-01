@@ -678,6 +678,9 @@ class LlamaModel(LlamaPreTrainedModel):
         return_dict: Optional[bool] = None,
         coords: Optional[torch.Tensor] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
+
+        raise Exception("In llama forward")
+
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
@@ -723,6 +726,7 @@ class LlamaModel(LlamaPreTrainedModel):
             attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
         )
 
+        raise Exception("before making embedder")
         if self.config.use_2d:
             pos_embeds = self.embedder(coords)
         else:

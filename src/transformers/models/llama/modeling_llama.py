@@ -374,7 +374,7 @@ class LlamaAttention(nn.Module):
         if self.use_2d and not self.pin_lbd:
             query_states, key_states = apply_rotary_2d_pos_emb(query_states, key_states, pos_embeds, self.lbd)
         else:
-            raise Exception("Didn't apply 2d pos emb")
+            # raise Exception("Didn't apply 2d pos emb")
 
         if past_key_value is not None:
             # reuse k, v, self_attention
@@ -679,7 +679,7 @@ class LlamaModel(LlamaPreTrainedModel):
         coords: Optional[torch.Tensor] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
 
-        raise Exception("In llama forward")
+        # raise Exception("In llama forward")
 
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
@@ -726,12 +726,12 @@ class LlamaModel(LlamaPreTrainedModel):
             attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
         )
 
-        raise Exception("before making embedder")
+        # raise Exception("before making embedder")
         if self.config.use_2d:
             pos_embeds = self.embedder(coords)
         else:
             pos_embeds = torch.zeros_like(inputs_embeds)
-            raise Exception("Made pos_embeds zeros")
+            # raise Exception("Made pos_embeds zeros")
 
         hidden_states = inputs_embeds
 
@@ -877,7 +877,7 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
         "Hey, are you conscious? Can you talk to me?\nI'm not conscious, but I can talk to you."
         ```"""
 
-        raise Exception("In llamaforcausallm forward")
+        # raise Exception("In llamaforcausallm forward")
 
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (

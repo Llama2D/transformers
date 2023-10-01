@@ -374,7 +374,7 @@ class LlamaAttention(nn.Module):
         if self.use_2d and not self.pin_lbd:
             query_states, key_states = apply_rotary_2d_pos_emb(query_states, key_states, pos_embeds, self.lbd)
         else:
-            raise Exception("Didn't apply 2d pos emb")
+            pass
 
         if past_key_value is not None:
             # reuse k, v, self_attention

@@ -50,7 +50,12 @@ class PositionEmbeddingRandom(nn.Module):
         coords = coords @ self.positional_encoding_gaussian_matrix
         coords = 2 * np.pi * coords
         # outputs d_1 x ... x d_n x C shape
-        return torch.cat([torch.sin(coords), torch.cos(coords)], dim=-1)
+        ret = torch.cat([torch.sin(coords), torch.cos(coords)], dim=-1)
+
+        # rotate the ret tensor from i.e. sin sin cos cos to cos sin sin cos
+        ret = torch.cat([ret[:, :, self.num_pos_feats:], ret[:, :, :self.num_pos_feats]], dim=-1)
+
+        return ret
 
     def forward_with_coords(
         self, coords_input: torch.Tensor, image_size: Tuple[int, int]

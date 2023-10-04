@@ -128,6 +128,7 @@ class LlamaConfig(PretrainedConfig):
 
 	use_2d:bool=True,
     lbd_start_value:float=0.0,
+    use_point_embed:bool=True,
 
         **kwargs,
     ):
@@ -154,6 +155,7 @@ class LlamaConfig(PretrainedConfig):
 
         self.use_2d = use_2d
         self.lbd_start_value = lbd_start_value
+        self.use_point_embed = use_point_embed
 
         super().__init__(
             pad_token_id=pad_token_id,

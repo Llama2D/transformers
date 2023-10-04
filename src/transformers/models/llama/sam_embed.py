@@ -13,7 +13,8 @@ class PositionEmbeddingRandom(nn.Module):
             self,
             num_pos_feats: int = 64,
             scale: Optional[float] = None,
-            torch_dtype=None
+            torch_dtype=None,
+            use_point_embed: bool = True,
         ) -> None:
         super().__init__()
 
@@ -30,6 +31,10 @@ class PositionEmbeddingRandom(nn.Module):
         # 0 is for not a point, 1 is for a point
         self.is_a_point_embed = nn.Embedding(2, num_pos_feats*2).to(torch_dtype)
         self.is_a_point_embed.weight.requires_grad = True
+        self.is_a_point_embed.requires_grad = True
+
+        print(f"Use point embed: {use_point_embed}")
+        self.use_point_embed = use_point_embed
         # make it show up in state_dict
 
         self.num_pos_feats = num_pos_feats
@@ -76,6 +81,8 @@ class PositionEmbeddingRandom(nn.Module):
         is_a_point_embeds = self.is_a_point_embed(is_a_point.long())
         # assert is_a_point_embeds.shape == (bs,seq_len,dim),f"Shape of is_a_point_embeds is {is_a_point_embeds.shape} - shape of coords is {coords.shape}"
 
-        delta = pos_embeds.unsqueeze(1) + is_a_point_embeds.unsqueeze(1)
+        delta = pos_embeds.unsqueeze(1)
+        if self.use_point_embed:
+            delta = delta + is_a_point_embeds.unsqueeze(1)
 
         return delta

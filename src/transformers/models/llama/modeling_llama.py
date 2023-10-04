@@ -620,7 +620,12 @@ class LlamaModel(LlamaPreTrainedModel):
         # if config.use_2d:
         num_pos_feats = config.hidden_size // config.num_key_value_heads
 
-        self.embedder = PositionEmbeddingRandom(num_pos_feats=num_pos_feats//2,scale=None,torch_dtype=config.torch_dtype)
+        self.embedder = PositionEmbeddingRandom(
+            num_pos_feats=num_pos_feats//2,
+            scale=None,
+            torch_dtype=config.torch_dtype,
+            use_point_embed=config.use_point_embed,
+        )
 
         print(list(self.embedder.state_dict().keys()))
 

@@ -246,10 +246,12 @@ class LambdaGate(nn.Module):
         num_embeds = 2
         self.lbd = nn.Parameter(torch.ones(num_embeds,requires_grad=True,dtype=torch_dtype)*start_value,requires_grad=True)
 
-    def forward(self,a,embeds:Tuple[torch.Tensor]):
+    def forward(self,a,embeds):
         assert len(embeds) == len(self.lbd),"There should be one lambda per embedding"
         # a + lambda dot embeds (dot across last dim)
-        return a + torch.einsum("bnd,nd->bnd",embeds,self.lbd)
+        # embeds is a tuple of tensors. Multiply them by their respective lambdas, then sum them
+        return a + torch.stack([self.lbd[i]*embeds[i] for i in range(len(embeds))],dim=0).sum(dim=0)
+
 
 def apply_rotary_2d_pos_emb(q,k,pos_embeds,lbd):
 

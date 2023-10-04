@@ -242,13 +242,14 @@ class LambdaGate(nn.Module):
         assert config is not None,"No config passed to Lambda"
 
         start_value = config.lbd_start_value
-        # print("start_value",config.lbd_start_value)
 
-        self.lbd = nn.Parameter(torch.tensor([start_value],requires_grad=True,dtype=torch_dtype),requires_grad=True)
-        self.lbd_name = "lambda"
+        num_embeds = 2
+        self.lbd = nn.Parameter(torch.ones(num_embeds,requires_grad=True,dtype=torch_dtype)*start_value,requires_grad=True)
 
-    def forward(self,a,embeds):
-        return a + embeds * self.lbd
+    def forward(self,a,embeds:Tuple[torch.Tensor]):
+        assert len(embeds) == len(self.lbd),"There should be one lambda per embedding"
+        # a + lambda dot embeds (dot across last dim)
+        return a + torch.einsum("bnd,nd->bnd",embeds,self.lbd)
 
 def apply_rotary_2d_pos_emb(q,k,pos_embeds,lbd):
 
@@ -625,6 +626,7 @@ class LlamaModel(LlamaPreTrainedModel):
             scale=None,
             torch_dtype=config.torch_dtype,
             use_point_embed=config.use_point_embed,
+            separate_point_embed=config.separate_point_embed,
         )
 
         print(list(self.embedder.state_dict().keys()))
@@ -733,7 +735,7 @@ class LlamaModel(LlamaPreTrainedModel):
         if self.config.use_2d:
             pos_embeds = self.embedder(coords)
         else:
-            pos_embeds = None
+            pos_embeds = (None,None)
             # raise Exception("Made pos_embeds zeros")
 
         hidden_states = inputs_embeds

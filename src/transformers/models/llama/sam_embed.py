@@ -15,6 +15,7 @@ class PositionEmbeddingRandom(nn.Module):
             scale: Optional[float] = None,
             torch_dtype=None,
             use_point_embed: bool = True,
+            separate_point_embed: bool = False,
         ) -> None:
         super().__init__()
 
@@ -35,6 +36,7 @@ class PositionEmbeddingRandom(nn.Module):
 
         print(f"Use point embed: {use_point_embed}")
         self.use_point_embed = use_point_embed
+        self.separate_point_embed = separate_point_embed
         # make it show up in state_dict
 
         self.num_pos_feats = num_pos_feats
@@ -61,7 +63,7 @@ class PositionEmbeddingRandom(nn.Module):
 
     def forward_with_coords(
         self, coords_input: torch.Tensor, image_size: Tuple[int, int]
-    ) -> torch.Tensor:
+    ) -> Tuple[torch.Tensor,torch.Tensor]:
         """Positionally encode points that are not normalized to [0,1]."""
         coords = coords_input.clone()
         coords[:, :, 0] = coords[:, :, 0] / image_size[1]
@@ -81,8 +83,10 @@ class PositionEmbeddingRandom(nn.Module):
         is_a_point_embeds = self.is_a_point_embed(is_a_point.long())
         # assert is_a_point_embeds.shape == (bs,seq_len,dim),f"Shape of is_a_point_embeds is {is_a_point_embeds.shape} - shape of coords is {coords.shape}"
 
-        delta = pos_embeds.unsqueeze(1)
-        if self.use_point_embed:
-            delta = delta + is_a_point_embeds.unsqueeze(1)
+        delta_pos = pos_embeds.unsqueeze(1)
+        delta_point = torch.zeros_like(delta_pos) if not self.use_point_embed else is_a_point_embeds.unsqueeze(1)
 
-        return delta
+        if self.separate_point_embed:
+            return delta_pos,delta_point
+        else:
+            return delta_pos+delta_point,torch.zeros_like(delta_pos)
